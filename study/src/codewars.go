@@ -6,6 +6,7 @@ import ("fmt"
 
 func main(){
 	fmt.Println(Multiple3And5(20))
+	//https://www.codewars.com/users/azirsold
 }
 
 //any positive number
