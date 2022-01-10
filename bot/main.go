@@ -14,6 +14,7 @@ func main(){
 	// Create a new Discord session using the provided bot token.
 	// if it fail to get discord from discordgo, then it will not be nill and will stop
 	Discord, errDisc := discordgo.New("Bot " + options.Key)
+
 	if errDisc != nil {
 		fmt.Println("error creating Discord session,", errDisc)    
 		return
@@ -24,7 +25,6 @@ func main(){
 		return 
 	}
 	BotID = user.ID
-
 	//everything is ok, time to get started
-	GObot.Start(Discord, options.Key, options.BotShortcut, BotID)
+	GObot.Start(Discord, BotID)
 }
