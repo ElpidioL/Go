@@ -5,6 +5,6 @@ import (
 	//"bots/GOing/options"
 )
 
-func VoiceFunc(channelSession *discordgo.Session, message *discordgo.MessageCreate, ch string) {
+func JoinFunction(channelSession *discordgo.Session, message *discordgo.MessageCreate, ch string) {
 	channelSession.ChannelVoiceJoin(message.GuildID, ch, false, true)
 }

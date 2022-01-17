@@ -1,7 +1,6 @@
 package GObot
 
 import (
-	"bots/GOing/modules"
 	"fmt"
 	"os"
 	"os/signal"
@@ -18,7 +17,7 @@ func Start(Discord *discordgo.Session, BotID string) {
 		return
 	}
 
-	Discord.AddHandler(modules.ReceiveMessage)
+	Discord.AddHandler(ReceiveMessage)
 
 	//Discord.Identify.Intents = discordgo.IntentsAll
 	Discord.Identify.Intents = discordgo.IntentsGuildMessages // not sure what it does actually, i think it set the "Intent"
