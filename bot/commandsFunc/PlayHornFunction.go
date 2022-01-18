@@ -12,7 +12,7 @@ import (
 
 var buffer = make([][]byte, 0)
 
-func PlayHorn(channelSession *discordgo.Session, message *discordgo.MessageCreate, voiceCID string) {
+func PlayHorn(channelSession *discordgo.Session, GuildID string, voiceCID string) {
 
 	// Load the sound file.
 	err := loadSound()
@@ -22,7 +22,7 @@ func PlayHorn(channelSession *discordgo.Session, message *discordgo.MessageCreat
 		return
 	}
 
-	err = playSound(channelSession, message.GuildID, voiceCID)
+	err = playSound(channelSession, GuildID, voiceCID)
 	if err != nil {
 		fmt.Println("Error playing sound:", err)
 	}
@@ -31,7 +31,9 @@ func PlayHorn(channelSession *discordgo.Session, message *discordgo.MessageCreat
 
 // playSound plays the current buffer to the provided channel.
 func playSound(channelSession *discordgo.Session, guildID, channelID string) (err error) {
-
+	if len(channelID) == 0 {
+		return
+	}
 	// Join the provided voice channel.
 	vc, err := channelSession.ChannelVoiceJoin(guildID, channelID, false, true)
 	if err != nil {

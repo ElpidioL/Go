@@ -34,10 +34,10 @@ func ReceiveMessage(channelSession *discordgo.Session, message *discordgo.Messag
 		functions.TtsMessageFunc(channelSession, message)
 
 	} else if messageToUpper == options.Commands[4] { //!JOIN
-		functions.JoinFunction(channelSession, message, modules.FindVoiceChannel(channelSession, message))
+		functions.JoinFunction(channelSession, message, modules.FindVoiceChannel(channelSession, message.GuildID, message.Author.ID))
 
 	} else if messageToUpper == options.Commands[5] { //!PLAY
-		functions.PlayHorn(channelSession, message, modules.FindVoiceChannel(channelSession, message))
+		functions.PlayHorn(channelSession, message.GuildID, modules.FindVoiceChannel(channelSession, message.GuildID, message.Author.ID))
 
 	} else if messageToUpper == options.Commands[6] { //!LEAVE
 		channelSession.ChannelVoiceJoin("", "", false, true)

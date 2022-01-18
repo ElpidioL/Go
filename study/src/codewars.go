@@ -7,9 +7,9 @@ import (
 )
 
 func main() {
-	//https://www.codewars.com/users/azirsold
+
 	x := "cake"
-	fmt.Println(&x)
+	fmt.Println(x)
 }
 
 func duplicate_count(s1 string) int { //6kyu
