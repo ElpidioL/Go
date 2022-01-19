@@ -34,17 +34,27 @@ func GetMatchLol(summonerID string) (summonerName string, gameMode string, champ
 	} else {
 
 		jsonPlayerInfo := jsonBody["participants"].([]interface{}) //not going to explain that cuz i'm not sure what i did.
-		jsonPlayerInfoDepth := jsonPlayerInfo[0].(map[string]interface{})
+		for index, _ := range jsonPlayerInfo {
+			jsonPlayerInfoDepth := jsonPlayerInfo[index].(map[string]interface{})
+			//playerIdGet := jsonPlayerInfoDepth["summonerId"]
 
-		gameMode, summonerName := fmt.Sprintf("%v", jsonBody["gameMode"]), fmt.Sprintf("%v", jsonPlayerInfoDepth["summonerName"])
+			if jsonPlayerInfoDepth["summonerId"] == options.PlayerIdLol {
+				jsonPlayerInfoDepth := jsonPlayerInfo[index].(map[string]interface{})
 
-		championId := fmt.Sprintf("%v", jsonPlayerInfoDepth["championId"])
-		championIdInt, err := strconv.Atoi(championId)
-		if err != nil {
-			championIdInt = 0
+				gameMode, summonerName := fmt.Sprintf("%v", jsonBody["gameMode"]), fmt.Sprintf("%v", jsonPlayerInfoDepth["summonerName"])
+
+				championId := fmt.Sprintf("%v", jsonPlayerInfoDepth["championId"])
+				championIdInt, err := strconv.Atoi(championId)
+				if err != nil {
+					championIdInt = 0
+				}
+
+				return summonerName, gameMode, GetChampName(championIdInt)
+
+			}
 		}
+		return "", "", ""
 
-		return summonerName, gameMode, GetChampName(championIdInt)
 	}
 
 }
