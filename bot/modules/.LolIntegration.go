@@ -28,7 +28,6 @@ func GetMatchLol(summonerID string) (summonerName string, gameMode string, champ
 	var jsonBody map[string]interface{}
 
 	json.Unmarshal([]byte(respBody), &jsonBody)
-
 	if len(jsonBody) <= 1 { //if the len is <= 1 i know the player is not in a match.
 		return "", "", ""
 	} else {
@@ -40,7 +39,6 @@ func GetMatchLol(summonerID string) (summonerName string, gameMode string, champ
 
 			if jsonPlayerInfoDepth["summonerId"] == options.PlayerIdLol {
 				jsonPlayerInfoDepth := jsonPlayerInfo[index].(map[string]interface{})
-
 				gameMode, summonerName := fmt.Sprintf("%v", jsonBody["gameMode"]), fmt.Sprintf("%v", jsonPlayerInfoDepth["summonerName"])
 
 				championId := fmt.Sprintf("%v", jsonPlayerInfoDepth["championId"])

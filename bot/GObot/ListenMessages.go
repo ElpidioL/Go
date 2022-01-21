@@ -7,7 +7,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	functions "bots/GOing/commandsFunc"
+	functions "bots/GOing/functions"
 	"time"
 )
 
@@ -41,5 +41,8 @@ func ReceiveMessage(channelSession *discordgo.Session, message *discordgo.Messag
 
 	} else if messageToUpper == options.Commands[6] { //!LEAVE
 		channelSession.ChannelVoiceJoin("", "", false, true)
+
+	} else if messageToUpper == options.Commands[7] { //!LOOP
+		functions.LoopAeternum(channelSession, message)
 	}
 }

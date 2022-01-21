@@ -30,9 +30,9 @@ func init() {
 	Key = os.Getenv("KEY_TOKEN")
 	LolKey = os.Getenv("LOL_TOKEN")
 
-	Guild = os.Getenv("GUILD")
-	Player = os.Getenv("PLAYER")
-	PlayerIdLol = os.Getenv("PLAYER_ID")
+	Guild = os.Getenv("GUILD_DISCORD")
+	Player = os.Getenv("PLAYER_DISCORD")
+	PlayerIdLol = os.Getenv("PLAYER_ID_LOL")
 	ChannelText = os.Getenv("CHANNEL_TEXT")
 
 	////If you want to change a command, its here.
@@ -44,6 +44,7 @@ func init() {
 	Commands = append(Commands, BotShortcut+"JOIN")
 	Commands = append(Commands, BotShortcut+"PLAY")
 	Commands = append(Commands, BotShortcut+"LEAVE")
+	Commands = append(Commands, BotShortcut+"LOOP")
 	fmt.Println(Commands)
 	/// the positions are important if you want to change the Function of this command
 	//  otherwise, you just need to change

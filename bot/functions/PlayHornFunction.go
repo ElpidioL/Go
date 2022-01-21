@@ -31,6 +31,7 @@ func PlayHorn(channelSession *discordgo.Session, GuildID string, voiceCID string
 
 // playSound plays the current buffer to the provided channel.
 func playSound(channelSession *discordgo.Session, guildID, channelID string) (err error) {
+
 	if len(channelID) == 0 {
 		return
 	}
@@ -41,7 +42,8 @@ func playSound(channelSession *discordgo.Session, guildID, channelID string) (er
 	}
 
 	// Sleep for a specified amount of time before playing the sound
-	time.Sleep(250 * time.Millisecond)
+	//time.Sleep(250 * time.Millisecond)
+	//só atrapalhava esse sleep
 
 	// Send the buffer data.
 	for _, buff := range buffer {
@@ -59,7 +61,7 @@ func playSound(channelSession *discordgo.Session, guildID, channelID string) (er
 
 // loadSound attempts to load an encoded sound file from disk.
 func loadSound() error {
-
+	buffer = nil //reset se não o audio toca repetido na segunda vez
 	file, err := os.Open("airhorn.dca")
 	if err != nil {
 		fmt.Println("Error opening dca file :", err)
