@@ -39,9 +39,7 @@ func NotifyLol(Discord *discordgo.Session) {
 	//here i'll be handling the Lol API for now, since i need to update with a different rate than discord handler
 	//this will be here.
 	for true {
-		//sleep so i don't waste much process power for nothing (probably there is a better way to do that...)
-		time.Sleep(120 * time.Second)
-
+		fmt.Println("true")
 		allUsers := PSB.GetAllUsers()
 		for index, _ := range allUsers {
 			time.Sleep(500 * time.Millisecond)
@@ -50,15 +48,18 @@ func NotifyLol(Discord *discordgo.Session) {
 			matchInfo := <-matchChan
 			go PSB.GetMatchDB(matchInfo.GameId, alertChan)
 			alert := <-alertChan
+			fmt.Println(matchInfo.GameId)
 			if matchInfo.GameId > 0 && alert {
-				message := "O Crime foi iniciado, " + matchInfo.Participants[0].SummonerName + " começou a gameplay criminosa jogando de " + GetChampName(matchInfo.Participants[0].ChampionId) + " em uma partida " + matchInfo.GameMode + " se preparem para o choro"
-
+				fmt.Println("in")
+				message := fmt.Sprintf("O Crime foi iniciado, %s começou a gameplay criminosa jogando de %s em uma partida %s se preparem para o choro", matchInfo.Participants[0].SummonerName, GetChampName(matchInfo.Participants[0].ChampionId), matchInfo.GameMode)
 				modules.SendMessage(Discord, options.ChannelText, message, false)
-				PSB.MatchRegister(matchInfo.GameId, allUsers[index].Id, allUsers[index].Discord_register)
+				PSB.MatchRegister(matchInfo.GameId, allUsers[index].Name, allUsers[index].Discord_register)
 				//functions.PlayHorn(Discord, options.Guild, modules.FindVoiceChannel(Discord, options.Guild, options.Player))
 				// i was playing a horn on a previous version, but since i can register a lot of players now, there is no way to keep track of the player to disturb
 			}
 		}
+		//sleep so i don't waste much process power for nothing (probably there is a better way to do that...)
+		time.Sleep(60 * time.Second)
 	}
 }
 
