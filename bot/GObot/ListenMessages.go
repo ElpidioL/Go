@@ -1,8 +1,11 @@
 package GObot
 
 import (
-	"bots/GOing/modules"
+	API "bots/GOing/API"
+	db "bots/GOing/PostgreDB"
+	modules "bots/GOing/modules"
 	"bots/GOing/options"
+	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -44,5 +47,16 @@ func ReceiveMessage(channelSession *discordgo.Session, message *discordgo.Messag
 
 	} else if messageToUpper == options.Commands[7] { //!LOOP
 		functions.LoopAeternum(channelSession, message)
+
+	} else if strings.Contains(messageToUpper, options.Commands[8]) { //!LOL  (register)
+		userN := strings.Replace(messageToUpper, "!LOL ", "", -1)
+		msg := API.GetUserLol(userN, message.ChannelID)
+		modules.SendMessage(channelSession, message.ChannelID, msg, false)
+
+	} else if strings.Contains(messageToUpper, options.Commands[9]) { //!RELOL  (remove)
+		fmt.Println("listen")
+		userN := strings.Replace(messageToUpper, "!RELOL ", "", -1)
+		msg := db.UserRemove(userN)
+		modules.SendMessage(channelSession, message.ChannelID, msg, false)
 	}
 }

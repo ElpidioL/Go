@@ -45,6 +45,8 @@ func init() {
 	Commands = append(Commands, BotShortcut+"PLAY")
 	Commands = append(Commands, BotShortcut+"LEAVE")
 	Commands = append(Commands, BotShortcut+"LOOP")
+	Commands = append(Commands, BotShortcut+"LOL")
+	Commands = append(Commands, BotShortcut+"RELOL")
 	fmt.Println(Commands)
 	/// the positions are important if you want to change the Function of this command
 	//  otherwise, you just need to change

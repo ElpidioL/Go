@@ -1,0 +1,45 @@
+func GetMatchLol(summonerID string, ChanSummonerName chan string, ChanGameMode chan string, ChanChampion chan string) {
+	bodyChan := make(chan string)
+	url := "https://br1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + summonerID + "?api_key=" + options.LolKey
+	go GetInfoApi(url, bodyChan)
+	respBody := <-bodyChan
+
+	//here i'll start to handle the body as json (and i had a lot of trouble as you can see)
+	var jsonBody map[string]interface{}
+	json.Unmarshal([]byte(respBody), &jsonBody)
+	//fmt.Println(respBody)
+	if len(jsonBody) <= 1 { //if the len is <= 1 i know the player is not in a match.
+		//return "", "", ""
+		ChanSummonerName <- ""
+		ChanGameMode <- ""
+		ChanChampion <- ""
+
+	} else {
+		fmt.Println(jsonBody)
+		jsonPlayerInfo := jsonBody["participants"].([]interface{}) //not going to explain that cuz i'm not sure what i did.
+		for index, _ := range jsonPlayerInfo {
+			jsonPlayerInfoDepth := jsonPlayerInfo[index].(map[string]interface{})
+			//playerIdGet := jsonPlayerInfoDepth["summonerId"]
+
+			if jsonPlayerInfoDepth["summonerId"] == options.PlayerIdLol {
+				jsonPlayerInfoDepth := jsonPlayerInfo[index].(map[string]interface{})
+				gameMode, summonerName := fmt.Sprintf("%v", jsonBody["gameMode"]), fmt.Sprintf("%v", jsonPlayerInfoDepth["summonerName"])
+
+				championId := fmt.Sprintf("%v", jsonPlayerInfoDepth["championId"])
+				championIdInt, err := strconv.Atoi(championId)
+				if err != nil {
+					championIdInt = 0
+				}
+				champName := GetChampName(championIdInt)
+				//return summonerName, gameMode, GetChampName(championIdInt)
+				ChanSummonerName <- summonerName
+				ChanGameMode <- gameMode
+				ChanChampion <- champName
+
+			}
+		}
+	}
+	ChanSummonerName <- ""
+	ChanGameMode <- ""
+	ChanChampion <- ""
+}

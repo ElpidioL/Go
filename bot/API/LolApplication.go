@@ -1,60 +1,124 @@
-package modules
+package API
 
 import (
+	PSB "bots/GOing/PostgreDB"
+	"bots/GOing/modules"
 	"bots/GOing/options"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
+	"time"
+
+	"github.com/bwmarrin/discordgo"
 )
 
-func GetMatchLol(summonerID string) (summonerName string, gameMode string, championIdInt string) {
-	// i'll be getting the body from the api request of riot games
-	resp, err := http.Get("https://br1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + summonerID + "?api_key=" + options.LolKey)
+type MatchL struct {
+	GameId       int    `json:"gameId"`
+	GameMode     string `json:"gameMode"`
+	Participants []struct {
+		SpellId      int    `json:"spell1Id"`
+		Spell2ID     int    `json:"spell2Id"`
+		ChampionId   int    `json:"championId"`
+		SummonerName string `json:"summonerName"`
+		SummonerId   string `json:"summonerId"`
+	}
+}
+
+type UserL struct {
+	Id        string `json:"id"`
+	AccountId string `json:"accountId"`
+	Puuid     string `json:"puuid"`
+	Name      string `json:"name"`
+}
+
+func NotifyLol(Discord *discordgo.Session) {
+	var matchChan chan MatchL = make(chan MatchL)
+	var alertChan chan bool = make(chan bool)
+
+	//here i'll be handling the Lol API for now, since i need to update with a different rate than discord handler
+	//this will be here.
+	for true {
+		//sleep so i don't waste much process power for nothing (probably there is a better way to do that...)
+		time.Sleep(120 * time.Second)
+
+		allUsers := PSB.GetAllUsers()
+		for index, _ := range allUsers {
+			time.Sleep(500 * time.Millisecond)
+
+			go GetMatchLol(allUsers[index].Id, matchChan)
+			matchInfo := <-matchChan
+			go PSB.GetMatchDB(matchInfo.GameId, alertChan)
+			alert := <-alertChan
+			if matchInfo.GameId > 0 && alert {
+				message := "O Crime foi iniciado, " + matchInfo.Participants[0].SummonerName + " começou a gameplay criminosa jogando de " + GetChampName(matchInfo.Participants[0].ChampionId) + " em uma partida " + matchInfo.GameMode + " se preparem para o choro"
+
+				modules.SendMessage(Discord, options.ChannelText, message, false)
+				PSB.MatchRegister(matchInfo.GameId, allUsers[index].Id, allUsers[index].Discord_register)
+				//functions.PlayHorn(Discord, options.Guild, modules.FindVoiceChannel(Discord, options.Guild, options.Player))
+				// i was playing a horn on a previous version, but since i can register a lot of players now, there is no way to keep track of the player to disturb
+			}
+		}
+	}
+}
+
+func GetInfoApi(url string, bodyChan chan string) {
+	resp, err := http.Get(url)
 	if err != nil {
-		return "", "", ""
+		//return "", "", ""
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	var respBody string
-
 	for _, value := range body { //here i convert runes to string that way because i don't know any better way.
 		respBody += string(value) //dunno why its coming in runes in first place
 	}
 	//end
 
-	//here i'll start to handle the body as json (and i had a lot of trouble as you can see)
-	var jsonBody map[string]interface{}
+	bodyChan <- respBody
+}
 
-	json.Unmarshal([]byte(respBody), &jsonBody)
-	if len(jsonBody) <= 1 { //if the len is <= 1 i know the player is not in a match.
-		return "", "", ""
+func GetUserLol(userNameLol string, discordChannel string) string {
+	bodyChan := make(chan string)
+	url := "https://br1.api.riotgames.com/lol/summoner/v4/summoners/by-name/" + userNameLol + "?api_key=" + options.LolKey
+	go GetInfoApi(url, bodyChan)
+	respBody := <-bodyChan
+
+	user := UserL{}
+	err := json.Unmarshal([]byte(respBody), &user)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if len(user.Puuid) == 0 {
+		return fmt.Sprintf("Player %s does not exist in BR server", userNameLol)
+	}
+	msg := PSB.UserRegister(user.Name, user.Id, user.Puuid, user.AccountId, discordChannel)
+
+	return msg
+}
+
+func GetMatchLol(summonerID string, mt chan MatchL) { //ChanSummonerName chan string, ChanGameMode chan string, ChanChampion chan string) {
+	bodyChan := make(chan string)
+	url := "https://br1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + summonerID + "?api_key=" + options.LolKey
+	go GetInfoApi(url, bodyChan)
+	respBody := <-bodyChan
+	match := MatchL{}
+	if len(respBody) <= 1 {
+		mt <- match
+
 	} else {
-
-		jsonPlayerInfo := jsonBody["participants"].([]interface{}) //not going to explain that cuz i'm not sure what i did.
-		for index, _ := range jsonPlayerInfo {
-			jsonPlayerInfoDepth := jsonPlayerInfo[index].(map[string]interface{})
-			//playerIdGet := jsonPlayerInfoDepth["summonerId"]
-
-			if jsonPlayerInfoDepth["summonerId"] == options.PlayerIdLol {
-				jsonPlayerInfoDepth := jsonPlayerInfo[index].(map[string]interface{})
-				gameMode, summonerName := fmt.Sprintf("%v", jsonBody["gameMode"]), fmt.Sprintf("%v", jsonPlayerInfoDepth["summonerName"])
-
-				championId := fmt.Sprintf("%v", jsonPlayerInfoDepth["championId"])
-				championIdInt, err := strconv.Atoi(championId)
-				if err != nil {
-					championIdInt = 0
-				}
-
-				return summonerName, gameMode, GetChampName(championIdInt)
-
+		err := json.Unmarshal([]byte(respBody), &match)
+		if err != nil {
+			fmt.Println(err)
+		}
+		for index, _ := range match.Participants {
+			if match.Participants[index].SummonerId == summonerID {
+				match.Participants[0] = match.Participants[index]
+				mt <- match
 			}
 		}
-		return "", "", ""
-
 	}
-
+	mt <- match
 }
 
 func GetChampName(id int) string {

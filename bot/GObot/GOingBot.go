@@ -1,12 +1,14 @@
 package GObot
 
 import (
+	"bots/GOing/API"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	//encoding/json"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -28,7 +30,7 @@ func Start(Discord *discordgo.Session, BotID string) {
 	///////////////////////////////////////////////////End////////////////////////////////////////
 
 	//
-	go NotifyLol(Discord)
+	go API.NotifyLol(Discord)
 	//
 	////////////////////////////////////////////////Keeping the application alive////////////////////////
 	// to only get messages
