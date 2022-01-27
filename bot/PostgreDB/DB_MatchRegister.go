@@ -10,7 +10,7 @@ import (
 
 ///i Dont like the fact that i need to init the DB in every piece of script, but for now i'll keep that way.
 
-func MatchRegister(matchId int, playerName string, discord_id string) bool {
+func MatchRegister(matchId int, playerName string, championName string, discord_id string) bool {
 	//storing the info to access the DB
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
@@ -31,7 +31,7 @@ func MatchRegister(matchId int, playerName string, discord_id string) bool {
 
 	////////////Reading single info from Table
 	//remember that we created this value on the update
-	sqlStatement := fmt.Sprintf("SELECT match_id FROM matchidlist WHERE match_id=%d;", matchId)
+	sqlStatement := fmt.Sprintf(`SELECT match_id FROM matchidlist WHERE match_id='%d' AND player_name='%s';`, matchId, strings.ToUpper(playerName))
 	var matchInfo string
 
 	row := db.QueryRow(sqlStatement)
@@ -39,10 +39,9 @@ func MatchRegister(matchId int, playerName string, discord_id string) bool {
 	switch err {
 	case sql.ErrNoRows:
 		sqlStatement := `
-					INSERT INTO matchidlist (match_id, player_name, discord_id)
-					VALUES ($1, $2, $3)`
-		_, err = db.Exec(sqlStatement, matchId, strings.ToUpper(playerName), discord_id)
-		fmt.Println("foi")
+					INSERT INTO matchidlist (match_id, player_name, player_champion,discord_id)
+					VALUES ($1, $2, $3, $4)`
+		_, err = db.Exec(sqlStatement, matchId, strings.ToUpper(playerName), championName, discord_id)
 		if err != nil {
 			fmt.Println(err)
 			return false
@@ -50,7 +49,6 @@ func MatchRegister(matchId int, playerName string, discord_id string) bool {
 		}
 		return true
 	case nil:
-		fmt.Println("rows")
 		return false
 	default:
 		panic(err)

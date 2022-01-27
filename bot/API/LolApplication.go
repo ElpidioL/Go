@@ -33,29 +33,26 @@ type UserL struct {
 }
 
 func NotifyLol(Discord *discordgo.Session) {
-	var matchChan chan MatchL = make(chan MatchL)
-	var alertChan chan bool = make(chan bool)
 
 	//here i'll be handling the Lol API for now, since i need to update with a different rate than discord handler
 	//this will be here.
 	for true {
-		fmt.Println("true")
 		allUsers := PSB.GetAllUsers()
 		for index, _ := range allUsers {
 			time.Sleep(500 * time.Millisecond)
 
-			go GetMatchLol(allUsers[index].Id, matchChan)
-			matchInfo := <-matchChan
-			go PSB.GetMatchDB(matchInfo.GameId, alertChan)
-			alert := <-alertChan
-			fmt.Println(matchInfo.GameId)
-			if matchInfo.GameId > 0 && alert {
-				fmt.Println("in")
-				message := fmt.Sprintf("O Crime foi iniciado, %s começou a gameplay criminosa jogando de %s em uma partida %s se preparem para o choro", matchInfo.Participants[0].SummonerName, GetChampName(matchInfo.Participants[0].ChampionId), matchInfo.GameMode)
-				modules.SendMessage(Discord, options.ChannelText, message, false)
-				PSB.MatchRegister(matchInfo.GameId, allUsers[index].Name, allUsers[index].Discord_register)
-				//functions.PlayHorn(Discord, options.Guild, modules.FindVoiceChannel(Discord, options.Guild, options.Player))
-				// i was playing a horn on a previous version, but since i can register a lot of players now, there is no way to keep track of the player to disturb
+			matchInfo := GetMatchLol(allUsers[index].Id)
+			if matchInfo.GameId > 0 {
+				alert := PSB.GetMatchDB(matchInfo.GameId, matchInfo.Participants[0].SummonerName)
+
+				if alert {
+					PSB.MatchRegister(matchInfo.GameId, allUsers[index].Name, GetChampName(matchInfo.Participants[0].ChampionId), allUsers[index].Discord_register)
+					message := fmt.Sprintf("O Crime foi iniciado, %s começou a gameplay criminosa jogando de %s em uma partida %s se preparem para o choro", matchInfo.Participants[0].SummonerName, GetChampName(matchInfo.Participants[0].ChampionId), matchInfo.GameMode)
+					modules.SendMessage(Discord, options.ChannelText, message, false)
+					//functions.PlayHorn(Discord, options.Guild, modules.FindVoiceChannel(Discord, options.Guild, options.Player))
+					// i was playing a horn on a previous version, but since i can register a lot of players now, there is no way to keep track of the player to disturb
+				}
+
 			}
 		}
 		//sleep so i don't waste much process power for nothing (probably there is a better way to do that...)
@@ -98,14 +95,14 @@ func GetUserLol(userNameLol string, discordChannel string) string {
 	return msg
 }
 
-func GetMatchLol(summonerID string, mt chan MatchL) { //ChanSummonerName chan string, ChanGameMode chan string, ChanChampion chan string) {
+func GetMatchLol(summonerID string) MatchL { //ChanSummonerName chan string, ChanGameMode chan string, ChanChampion chan string) {
 	bodyChan := make(chan string)
 	url := "https://br1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + summonerID + "?api_key=" + options.LolKey
 	go GetInfoApi(url, bodyChan)
 	respBody := <-bodyChan
 	match := MatchL{}
 	if len(respBody) <= 1 {
-		mt <- match
+		return match
 
 	} else {
 		err := json.Unmarshal([]byte(respBody), &match)
@@ -115,11 +112,11 @@ func GetMatchLol(summonerID string, mt chan MatchL) { //ChanSummonerName chan st
 		for index, _ := range match.Participants {
 			if match.Participants[index].SummonerId == summonerID {
 				match.Participants[0] = match.Participants[index]
-				mt <- match
+				return match
 			}
 		}
 	}
-	mt <- match
+	return match
 }
 
 func GetChampName(id int) string {
@@ -433,6 +430,8 @@ func GetChampName(id int) string {
 		return "Aphelios"
 	case 235:
 		return "Senna"
+	case 221:
+		return "Zeri"
 
 	}
 	return "deu ruim no codigo do ctr c ctr v, me notifica no privado seu champ"
