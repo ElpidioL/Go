@@ -5,7 +5,6 @@ import (
 	db "bots/GOing/PostgreDB"
 	modules "bots/GOing/modules"
 	"bots/GOing/options"
-	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -31,7 +30,17 @@ func ReceiveMessage(channelSession *discordgo.Session, message *discordgo.Messag
 		functions.PingPongFunc(channelSession, message)
 
 	} else if messageToUpper == options.Commands[2] { // 2 == !help
-		channelSession.ChannelMessageSend(message.ChannelID, strings.Join(options.Commands, ", "))
+		channelSession.ChannelMessageSend(message.ChannelID, //i'll make it prettier later.
+			`Help = You are seeing it rn
+Ping/Pong = it will simply return ping or pong
+TTS = Will send any message after the command with TTS enabled (not very useful indeed)
+Join = Will simply join the voice channel of who sent the message
+Play = It will play an annoying sound
+Leave = leave the VC
+Loop = it shouldn't exist, don't use.
+LOL = will add a league player to our track DB (usage LOL + player name)
+RELOL - will remove a league player from our DB (usage RELOL + player name)
+https://github.com/ElpidioL/Go-BOT-GOing-`)
 
 	} else if strings.Contains(messageToUpper, options.Commands[3]) { //!TTS
 		functions.TtsMessageFunc(channelSession, message)
@@ -54,7 +63,6 @@ func ReceiveMessage(channelSession *discordgo.Session, message *discordgo.Messag
 		modules.SendMessage(channelSession, message.ChannelID, msg, false)
 
 	} else if strings.Contains(messageToUpper, options.Commands[9]) { //!RELOL  (remove)
-		fmt.Println("listen")
 		userN := strings.Replace(messageToUpper, "!RELOL ", "", -1)
 		msg := db.UserRemove(userN)
 		modules.SendMessage(channelSession, message.ChannelID, msg, false)

@@ -10,7 +10,6 @@ import (
 ///i Dont like the fact that i need to init the DB in every piece of script, but for now i'll keep that way.
 
 func UserRemove(userName string) string {
-	fmt.Println("db in")
 	//storing the info to access the DB
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
@@ -34,9 +33,7 @@ func UserRemove(userName string) string {
 					DELETE FROM playerslol 
 					WHERE name = $1;`
 	_, err = db.Exec(sqlStatement, userName)
-	fmt.Println(userName)
 	if err != nil {
-		fmt.Println("ta de boa")
 		return fmt.Sprintf("Sorry but %s does not exist in our DB", userName)
 	}
 	return fmt.Sprintf("%s successfully deleted from our DB", userName)
