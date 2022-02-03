@@ -38,6 +38,7 @@ func NotifyLol(Discord *discordgo.Session) {
 	//this will be here.
 	for true {
 		allUsers := PSB.GetAllUsers()
+		fmt.Println(allUsers)
 		for index, _ := range allUsers {
 			time.Sleep(500 * time.Millisecond)
 
@@ -46,9 +47,12 @@ func NotifyLol(Discord *discordgo.Session) {
 				alert := PSB.GetMatchDB(matchInfo.GameId, matchInfo.Participants[0].SummonerName)
 
 				if alert {
-					PSB.MatchRegister(matchInfo.GameId, allUsers[index].Name, GetChampName(matchInfo.Participants[0].ChampionId), allUsers[index].Discord_register)
+					PSB.MatchRegister(matchInfo.GameId, allUsers[index].Name, GetChampName(matchInfo.Participants[0].ChampionId))
+					discords := PSB.GetAllDiscords(allUsers[index].Puuid)
 					message := fmt.Sprintf("O Crime foi iniciado, %s começou a gameplay criminosa jogando de %s em uma partida %s se preparem para o choro", matchInfo.Participants[0].SummonerName, GetChampName(matchInfo.Participants[0].ChampionId), matchInfo.GameMode)
-					modules.SendMessage(Discord, options.ChannelText, message, false)
+					for index, _ := range discords {
+						modules.SendMessage(Discord, discords.Discords_text, message, false)
+					}
 					//functions.PlayHorn(Discord, options.Guild, modules.FindVoiceChannel(Discord, options.Guild, options.Player))
 					// i was playing a horn on a previous version, but since i can register a lot of players now, there is no way to keep track of the player to disturb
 				}
@@ -76,7 +80,7 @@ func GetInfoApi(url string, bodyChan chan string) {
 	bodyChan <- respBody
 }
 
-func GetUserLol(userNameLol string, discordChannel string) string {
+func GetUserLol(userNameLol string, guildId, discordChannel string) string {
 	bodyChan := make(chan string)
 	url := "https://br1.api.riotgames.com/lol/summoner/v4/summoners/by-name/" + userNameLol + "?api_key=" + options.LolKey
 	go GetInfoApi(url, bodyChan)
@@ -90,7 +94,8 @@ func GetUserLol(userNameLol string, discordChannel string) string {
 	if len(user.Puuid) == 0 {
 		return fmt.Sprintf("Player %s does not exist in BR server", userNameLol)
 	}
-	msg := PSB.UserRegister(user.Name, user.Id, user.Puuid, user.AccountId, discordChannel)
+
+	msg := PSB.UserRegister(user.Name, user.Id, user.Puuid, user.AccountId, guildId, discordChannel)
 
 	return msg
 }

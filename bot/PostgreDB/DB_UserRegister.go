@@ -10,7 +10,7 @@ import (
 
 ///i Dont like the fact that i need to init the DB in every piece of script, but for now i'll keep that way.
 
-func UserRegister(name string, id string, puuid string, accountid string, discordChannel string) string {
+func UserRegister(name string, id string, puuid string, accountid string, guildId, discordChannel string) string {
 	//storing the info to access the DB
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
@@ -29,9 +29,7 @@ func UserRegister(name string, id string, puuid string, accountid string, discor
 		panic(err)
 	}
 
-	////////////Reading single info from Table
-	//remember that we created this value on the update
-	sqlStatement := fmt.Sprintf("SELECT name FROM playerslol WHERE puuid='%s';", puuid)
+	sqlStatement := fmt.Sprintf("SELECT nome_base FROM player_base WHERE puuid_base='%s';", puuid)
 	var playerName string
 
 	row := db.QueryRow(sqlStatement)
@@ -39,20 +37,40 @@ func UserRegister(name string, id string, puuid string, accountid string, discor
 	switch err {
 	case sql.ErrNoRows:
 		sqlStatement := `
-					INSERT INTO playerslol (name, id, puuid, accountid, discord_register)
-					VALUES ($1, $2, $3, $4, $5)`
-		_, err = db.Exec(sqlStatement, strings.ToUpper(name), id, puuid, accountid, discordChannel)
+					INSERT INTO player_base (nome_base, id_base, puuid_base, account_id_base)
+					VALUES ($1, $2, $3, $4)`
+		_, err = db.Exec(sqlStatement, strings.ToUpper(name), id, puuid, accountid)
 
-		//simplified version db.Exec(sqlStatement, "10", "Cake", "black#9999")
+		if err != nil {
+			{
+			}
+		}
+	case nil:
+		{
+		}
+	default:
+		panic(err)
+	}
+
+	sqlStatement = fmt.Sprintf("SELECT name FROM playerslol WHERE puuid='%s' AND discord_register='%s';", puuid, guildId)
+
+	row = db.QueryRow(sqlStatement)
+	err = row.Scan(&playerName)
+	switch err {
+	case sql.ErrNoRows:
+		sqlStatement := `
+					INSERT INTO playerslol (name, id, puuid, accountid, discord_register, discord_text)
+					VALUES ($1, $2, $3, $4, $5, $6)`
+		_, err = db.Exec(sqlStatement, strings.ToUpper(name), id, puuid, accountid, guildId, discordChannel)
+
 		if err != nil {
 			return "Something went wrong, try to contact the bot creator"
 			//panic(err)
 		}
-		return "Successfully registered " + name + " in our DB"
+		return "Successfully registered " + name + " in our DB for this server"
 	case nil:
-		return playerName + " is already registered in our DB"
+		return playerName + " is already registered in our DB for this server"
 	default:
 		panic(err)
 	}
-	///End
 }

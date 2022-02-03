@@ -10,7 +10,7 @@ import (
 
 ///i Dont like the fact that i need to init the DB in every piece of script, but for now i'll keep that way.
 
-func MatchRegister(matchId int, playerName string, championName string, discord_id string) bool {
+func MatchRegister(matchId int, playerName string, championName string) bool {
 	//storing the info to access the DB
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
@@ -40,8 +40,8 @@ func MatchRegister(matchId int, playerName string, championName string, discord_
 	case sql.ErrNoRows:
 		sqlStatement := `
 					INSERT INTO matchidlist (match_id, player_name, player_champion,discord_id)
-					VALUES ($1, $2, $3, $4)`
-		_, err = db.Exec(sqlStatement, matchId, strings.ToUpper(playerName), championName, discord_id)
+					VALUES ($1, $2, $3)`
+		_, err = db.Exec(sqlStatement, matchId, strings.ToUpper(playerName), championName)
 		if err != nil {
 			fmt.Println(err)
 			return false

@@ -20,9 +20,14 @@ type DbAcess struct {
 var DbInfo DbAcess
 
 type MatchUser struct {
-	Name             string
-	Id               string
-	Discord_register string
+	Name  string
+	Id    string
+	Puuid string
+}
+type DiscordList struct {
+	Name     string
+	Discords string
+	Discords_text string
 }
 
 func init() {

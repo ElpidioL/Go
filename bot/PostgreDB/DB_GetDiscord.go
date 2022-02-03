@@ -7,7 +7,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func GetAllUsers() []MatchUser {
+func GetAllDiscords(puuid string) []DiscordList {
 	//storing the info to access the DB
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
@@ -28,9 +28,9 @@ func GetAllUsers() []MatchUser {
 
 	////////////Reading mutiple values from Table
 	// here we are using the struct defined on the start.
-	var userList []MatchUser // going to use it to see all information
+	var discordList []DiscordList // going to use it to see all information
 
-	rows, err := db.Query("SELECT nome_base, id_base, puuid_base FROM player_base;")
+	rows, err := db.Query("SELECT name, discord_register, discord_text FROM playerslol WHERE puuid='%s';", puuid)
 
 	if err != nil {
 		fmt.Println(err)
@@ -39,14 +39,14 @@ func GetAllUsers() []MatchUser {
 
 	// Loop through rows, using Scan to assign column data to struct fields.
 	for rows.Next() {
-		var us MatchUser
-		if err := rows.Scan(&us.Name, &us.Id, &us.Puuid); err != nil {
+		var disc DiscordList
+		if err := rows.Scan(&disc.Name, &disc.Discords); err != nil {
 			panic(err)
 		}
-		userList = append(userList, us)
+		discordList = append(discordList, disc)
 	}
 	if err = rows.Err(); err != nil {
 		panic(err)
 	}
-	return userList
+	return discordList
 }

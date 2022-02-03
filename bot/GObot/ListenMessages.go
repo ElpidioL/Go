@@ -59,12 +59,12 @@ https://github.com/ElpidioL/Go-BOT-GOing-`)
 
 	} else if strings.Contains(messageToUpper, options.Commands[8]) { //!LOL  (register)
 		userN := strings.Replace(messageToUpper, "!LOL ", "", -1)
-		msg := API.GetUserLol(userN, message.ChannelID)
+		msg := API.GetUserLol(userN, message.GuildID, message.ChannelID)
 		modules.SendMessage(channelSession, message.ChannelID, msg, false)
 
 	} else if strings.Contains(messageToUpper, options.Commands[9]) { //!RELOL  (remove)
 		userN := strings.Replace(messageToUpper, "!RELOL ", "", -1)
-		msg := db.UserRemove(userN)
+		msg := db.UserRemove(userN, message.ChannelID)
 		modules.SendMessage(channelSession, message.ChannelID, msg, false)
 	}
 }
