@@ -39,7 +39,7 @@ func MatchRegister(matchId int, playerName string, championName string) bool {
 	switch err {
 	case sql.ErrNoRows:
 		sqlStatement := `
-					INSERT INTO matchidlist (match_id, player_name, player_champion,discord_id)
+					INSERT INTO matchidlist (match_id, player_name, player_champion)
 					VALUES ($1, $2, $3)`
 		_, err = db.Exec(sqlStatement, matchId, strings.ToUpper(playerName), championName)
 		if err != nil {

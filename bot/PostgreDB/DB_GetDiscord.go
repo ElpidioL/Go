@@ -30,17 +30,22 @@ func GetAllDiscords(puuid string) []DiscordList {
 	// here we are using the struct defined on the start.
 	var discordList []DiscordList // going to use it to see all information
 
-	rows, err := db.Query("SELECT name, discord_register, discord_text FROM playerslol WHERE puuid='%s';", puuid)
+	//rows, err := db.Query(`SELECT name, discord_register, discord_text FROM playerslol WHERE puuid='%s' ;`, puuid)
+	sqlStatement := `
+					SELECT name, discord_register, discord_text FROM playerslol 
+					WHERE puuid = $1;`
+	rows, err := db.Query(sqlStatement, puuid)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer rows.Close() //Remember to close for Query
 
-	// Loop through rows, using Scan to assign column data to struct fields.
+	// Loop through rows, using Scan to assign column data to struct fields
+
 	for rows.Next() {
 		var disc DiscordList
-		if err := rows.Scan(&disc.Name, &disc.Discords); err != nil {
+		if err := rows.Scan(&disc.Name, &disc.Discords, &disc.Discords_text); err != nil {
 			panic(err)
 		}
 		discordList = append(discordList, disc)

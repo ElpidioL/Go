@@ -38,7 +38,6 @@ func NotifyLol(Discord *discordgo.Session) {
 	//this will be here.
 	for true {
 		allUsers := PSB.GetAllUsers()
-		fmt.Println(allUsers)
 		for index, _ := range allUsers {
 			time.Sleep(500 * time.Millisecond)
 
@@ -51,7 +50,7 @@ func NotifyLol(Discord *discordgo.Session) {
 					discords := PSB.GetAllDiscords(allUsers[index].Puuid)
 					message := fmt.Sprintf("O Crime foi iniciado, %s começou a gameplay criminosa jogando de %s em uma partida %s se preparem para o choro", matchInfo.Participants[0].SummonerName, GetChampName(matchInfo.Participants[0].ChampionId), matchInfo.GameMode)
 					for index, _ := range discords {
-						modules.SendMessage(Discord, discords.Discords_text, message, false)
+						modules.SendMessage(Discord, discords[index].Discords_text, message, false)
 					}
 					//functions.PlayHorn(Discord, options.Guild, modules.FindVoiceChannel(Discord, options.Guild, options.Player))
 					// i was playing a horn on a previous version, but since i can register a lot of players now, there is no way to keep track of the player to disturb
